@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programme Été — Noam</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #1e1e2e;
+    --accent: #ff5f1f;
+    --accent2: #ffb347;
+    --green: #39d98a;
+    --blue: #4d9fff;
+    --text: #e8e8f0;
+    --muted: #6b6b85;
+    --faint: #1a1a28;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* HEADER */
+  header {
+    padding: 60px 0 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header-bg {
+    position: absolute;
+    top: -60px; right: -100px;
+    width: 500px; height: 400px;
+    background: radial-gradient(ellipse at center, rgba(255,95,31,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,95,31,0.12);
+    border: 1px solid rgba(255,95,31,0.3);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 5px 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  .badge::before { content: '◉'; font-size: 8px; }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 8vw, 88px);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .header-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .meta-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .meta-pill strong { color: var(--text); }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 40px 0;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .stat-card:hover::after { opacity: 1; }
+
+  .stat-card:nth-child(1) { animation-delay: 0.05s; }
+  .stat-card:nth-child(2) { animation-delay: 0.1s; }
+  .stat-card:nth-child(3) { animation-delay: 0.15s; }
+  .stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .section-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .divider {
+    width: 40px;
+    height: 2px;
+    background: var(--accent);
+    margin: 8px 0 24px;
+  }
+
+  /* PROGRAMME WEEK */
+  .week-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .week-block:hover { border-color: rgba(255,95,31,0.3); }
+
+  .week-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--faint);
+  }
+
+  .week-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+
+  .week-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .week-toggle {
+    font-size: 18px;
+    color: var(--muted);
+    transition: transform 0.3s;
+  }
+
+  .week-block.open .week-toggle { transform: rotate(180deg); }
+
+  .week-content {
+    display: none;
+    padding: 0 20px 20px;
+  }
+
+  .week-block.open .week-content { display: block; }
+
+  /* DAY CARDS */
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .day-card {
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .day-card.workout { background: rgba(255,95,31,0.06); border: 1px solid rgba(255,95,31,0.2); }
+  .day-card.cardio { background: rgba(77,159,255,0.06); border: 1px solid rgba(77,159,255,0.2); }
+  .day-card.rest { background: var(--faint); border: 1px solid var(--border); }
+
+  .day-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .day-card.workout .day-name { color: var(--accent); }
+  .day-card.cardio .day-name { color: var(--blue); }
+  .day-card.rest .day-name { color: var(--muted); }
+
+  .day-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  .day-card.workout .day-type { color: rgba(255,95,31,0.7); }
+  .day-card.cardio .day-type { color: rgba(77,159,255,0.7); }
+  .day-card.rest .day-type { color: var(--muted); }
+
+  .exercise-list { list-style: none; }
+
+  .exercise-list li {
+    font-size: 12.5px;
+    color: var(--text);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .exercise-list li:last-child { border-bottom: none; }
+
+  .ex-name { font-weight: 500; }
+  .ex-sets {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* PHASE TIMELINE */
+  .phase-timeline {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .phase-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phase-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+
+  .phase-card.p1::before { background: var(--blue); }
+  .phase-card.p2::before { background: var(--accent); }
+  .phase-card.p3::before { background: var(--green); }
+
+  .phase-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .phase-card.p1 .phase-num { color: var(--blue); }
+  .phase-card.p2 .phase-num { color: var(--accent); }
+  .phase-card.p3 .phase-num { color: var(--green); }
+
+  .phase-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .phase-dates {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .phase-desc { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+  /* NUTRITION */
+  .nutrition-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .nutri-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .nutri-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nutri-icon { font-size: 18px; }
+
+  .macro-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--faint);
+    font-size: 13px;
+  }
+
+  .macro-row:last-child { border-bottom: none; }
+
+  .macro-name { color: var(--muted); }
+  .macro-val { font-weight: 600; font-family: 'DM Mono', monospace; font-size: 14px; }
+
+  .macro-bar {
+    width: 80px;
+    height: 4px;
+    background: var(--faint);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .macro-fill { height: 100%; border-radius: 2px; }
+
+  .tip-list { list-style: none; }
+
+  .tip-list li {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 8px 0;
+    border-bottom: 1px solid var(--faint);
+    display: flex;
+    gap: 10px;
+    line-height: 1.5;
+  }
+
+  .tip-list li:last-child { border-bottom: none; }
+  .tip-icon { flex-shrink: 0; font-size: 14px; }
+
+  /* SLEEP & RECOVERY */
+  .recovery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .rec-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .rec-icon { font-size: 28px; margin-bottom: 10px; }
+  .rec-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .rec-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* PROGRESS TRACKER */
+  .tracker-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .tracker-week {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+    background: var(--faint);
+    color: var(--muted);
+    position: relative;
+  }
+
+  .tracker-week:hover { border-color: var(--accent); color: var(--accent); transform: scale(1.05); }
+  .tracker-week.done { background: rgba(57,217,138,0.15); border-color: rgba(57,217,138,0.4); color: var(--green); }
+  .tracker-week.current { background: rgba(255,95,31,0.15); border-color: rgba(255,95,31,0.5); color: var(--accent); box-shadow: 0 0 12px rgba(255,95,31,0.2); }
+
+  .progress-bar-wrap {
+    background: var(--faint);
+    border-radius: 4px;
+    height: 6px;
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    width: 0%;
+    transition: width 1s ease 0.5s;
+  }
+
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  section { animation: fadeUp 0.5s ease both; }
+  section:nth-child(2) { animation-delay: 0.1s; }
+  section:nth-child(3) { animation-delay: 0.15s; }
+  section:nth-child(4) { animation-delay: 0.2s; }
+  section:nth-child(5) { animation-delay: 0.25s; }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .days-grid { grid-template-columns: 1fr; }
+    .phase-timeline { grid-template-columns: 1fr; }
+    .nutrition-grid { grid-template-columns: 1fr; }
+    .recovery-grid { grid-template-columns: 1fr; }
+    .tracker-grid { grid-template-columns: repeat(5, 1fr); }
+  }
+
+  .tag {
+    display: inline-block;
+    background: rgba(57,217,138,0.1);
+    border: 1px solid rgba(57,217,138,0.25);
+    color: var(--green);
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .tag.orange { background: rgba(255,95,31,0.1); border-color: rgba(255,95,31,0.25); color: var(--accent); }
+  .tag.blue { background: rgba(77,159,255,0.1); border-color: rgba(77,159,255,0.25); color: var(--blue); }
+
+  .note-box {
+    background: rgba(255,179,71,0.07);
+    border: 1px solid rgba(255,179,71,0.2);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--accent2);
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .note-box strong { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-bg"></div>
+    <div class="badge">Programme Été 2025</div>
+    <h1>SHAPE<br><span>UP</span></h1>
+    <div class="header-meta">
+      <div class="meta-pill">📅 <strong>20 avril → 1er juillet</strong></div>
+      <div class="meta-pill">⚡ <strong>10 semaines</strong></div>
+      <div class="meta-pill">🎯 <strong>Haut du corps + Abdos + Perte de gras</strong></div>
+      <div class="meta-pill">💪 <strong>Intermédiaire · 92kg · 1m85</strong></div>
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Séances / semaine</div>
+      <div class="stat-val">4</div>
+      <div class="stat-sub">Lun · Mer · Jeu · Sam</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Durée par séance</div>
+      <div class="stat-val">60<span style="font-size:18px;color:var(--muted)">min</span></div>
+      <div class="stat-sub">Warm-up inclus</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Objectif calorique</div>
+      <div class="stat-val">2450</div>
+      <div class="stat-sub">kcal/jour · légère restriction</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Semaines totales</div>
+      <div class="stat-val">10</div>
+      <div class="stat-sub">3 phases progressives</div>
+    </div>
+  </div>
+
+  <!-- PHASES -->
+  <section>
+    <div class="section-title">Les 3 Phases</div>
+    <div class="divider"></div>
+    <div class="phase-timeline">
+      <div class="phase-card p1">
+        <div class="phase-num">Phase 01</div>
+        <div class="phase-title">Activation & Base</div>
+        <div class="phase-dates">20 avr → 11 mai · S1–S3</div>
+        <div class="phase-desc">Remise en route musculaire. Séries de 10–12 reps, techniques strictes, apprentissage des patterns. Cardio léger. Le corps s'adapte.</div>
+      </div>
+      <div class="phase-card p2">
+        <div class="phase-num">Phase 02</div>
+        <div class="phase-title">Intensification</div>
+        <div class="phase-dates">12 mai → 1er juin · S4–S6</div>
+        <div class="phase-desc">Montée en charge. Sets de 8–10 reps plus lourds + supersets pour brûler les calories. Cardio HIIT. Première définition visible.</div>
+      </div>
+      <div class="phase-card p3">
+        <div class="phase-num">Phase 03</div>
+        <div class="phase-title">Peak Summer</div>
+        <div class="phase-dates">2 juin → 1er juil · S7–S10</div>
+        <div class="phase-desc">Finition et définition. Volume élevé, tempos contrôlés, isolation abdos intensifiée. Cardio 2×/semaine. Résultat maximal.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRAMME TYPE -->
+  <section>
+    <div class="section-title">Programme Type Hebdo</div>
+    <div class="section-sub">Structure Push / Pull / Full + Cardio — cliquer pour ouvrir</div>
+
+    <!-- LUNDI -->
+    <div class="week-block open">
+      <div class="week-header" onclick="this.parentElement.classList.toggle('open')">
+        <div>
+          <div class="week-label">Lundi</div>
+          <div class="week-title">PUSH — Pectoraux · Épaules · Triceps</div>
+        </div>
+        <div class="week-toggle">▾</div>
+      </div>
+      <div class="week-content">
+        <div class="days-grid">
+          <div class="day-card workout">
+            <div class="day-name">LUNDI</div>
+            <div class="day-type">Push Day — Salle</div>
+            <ul class="exercise-list">
+              <li><span class="ex-name">🔥 Warm-up mobilité épaules</span><span class="ex-sets">5 min</span></li>
+              <li><span class="ex-name">Développé couché barre</span><span class="ex-sets">4×8–10</span></li>
+              <li><span class="ex-name">Développé incliné haltères</span><span class="ex-sets">3×10–12</span></li>
+              <li><span class="ex-name">Élévations latérales</span><span class="ex-sets">4×12–15</span></li>
+              <li><span class="ex-name">Développé militaire haltères</span><span class="ex-sets">3×10</span></li>
+              <li><span class="ex-name">Dips (lestés si possible)</span><span class="ex-sets">3×max</span></li>
+              <li><span class="ex-name">Pushdown câble triceps</span><span class="ex-sets">3×12</span></li>
+              <li><span class="ex-name">Planche + crunchs bicycle</span><span class="ex-sets">3×30s/20</span></li>
+            </ul>
+          </div>
+          <div class="day-card rest">
+            <div class="day-name">MARDI</div>
+            <div class="day-type">Repos actif</div>
+            <ul class="exercise-list">
+              <li><span class="ex-name">🚶 Marche 30–45 min</span></li>
+              <li><span class="ex-name">Stretching bas du corps</span></li>
+              <li><span class="ex-name">Foam roller si douleurs</span></li>
+              <li><span class="ex-name" style="color:var(--muted);font-size:12px;font-style:italic">Pas d'entraînement — récupération active</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MERCREDI -->
+    <div class="week-block">
+      <div class="week-header" onclick="this.parentElement.classList.toggle('open')">
+        <div>
+          <div class="week-label">Mercredi</div>
+          <div class="week-title">PULL — Dos · Biceps · Abdos</div>
+        </div>
+        <div class="week-toggle">▾</div>
+      </div>
+      <div class="week-content">
+        <div class="days-grid">
+          <div class="day-card workout">
+            <div class="day-name">MERCREDI</div>
+            <div class="day-type">Pull Day — Salle</div>
+            <ul class="exercise-list">
+              <li><span class="ex-name">🔥 Rowing léger / activation dos</span><span class="ex-sets">5 min</span></li>
+              <li><span class="ex-name">Tractions (ou tirage nuque)</span><span class="ex-sets">4×max/8</span></li>
+              <li><span class="ex-name">Rowing barre ou T-bar</span><span class="ex-sets">4×8–10</span></li>
+              <li><span class="ex-name">Tirage horizontal câble</span><span class="ex-sets">3×12</span></li>
+              <li><span class="ex-name">Curl barre EZ</span><span class="ex-sets">3×10–12</span></li>
+              <li><span class="ex-name">Curl haltères alterné</span><span class="ex-sets">3×12</span></li>
+              <li><span class="ex-name">Crunchs câble</span><span class="ex-sets">4×15</span></li>
+              <li><span class="ex-name">Leg raises suspendus</span><span class="ex-sets">3×12</span></li>
+            </ul>
+          </div>
+          <div class="day-card rest">
+            <div class="day-name">JEUDI MATIN</div>
+            <div class="day-type">Transition repos</div>
+            <ul class="exercise-list">
+              <li><span class="ex-name" style="color:var(--muted);font-size:12px">Récupération entre les 2 séances<br>de la semaine. Sommeil prioritaire.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JEUDI -->
+    <div class="week-block">
+      <div class="week-header" onclick="this.parentElement.classList.toggle('open')">
+        <div>
+          <div class="week-label">Jeudi</div>
+          <div class="week-title">FULL UPPER + HIIT Cardio</div>
+        </div>
+        <div class="week-toggle">▾</div>
+      </div>
+      <div class="week-content">
+        <div class="days-grid">
+          <div class="day-card workout">
+            <div class="day-name">JEUDI</div>
+            <div class="day-type">Full Upper Body — Salle</div>
+            <ul class="exercise-list">
+              <li><span class="ex-name">🔥 Corde à sauter / vélo 5 min</span><span class="ex-sets">Warm-up</span></li>
+              <li><span class="ex-name">Superset : Développé + Tirage</span><span class="ex-sets">4×10+10</span></li>
+              <li><span class="ex-name">Oiseau haltères (arrière épaules)</span><span class="ex-sets">3×12</span></li>
+              <li><span class="ex-name">Face pull câble</span><span class="ex-sets">3×15</span></li>
+              <li><span class="ex-name">Superset : Curl + Extension</span><span class="ex-sets">3×12+12</span></li>
+              <li><span class="ex-name">Gainage latéral</span><span class="ex-sets">3×30s/côté</span></li>
+              <li><span class="ex-name">Mountain climbers</span><span class="ex-sets">3×30s</span></li>
+              <li><span class="ex-name">HIIT tapis/vélo (après muscu)</span><span class="ex-sets">15 min</span></li>
+            </ul>
+          </div>
+          <div class="day-card rest">
+            <div class="day-name">VENDREDI</div>
+            <div class="day-type">Repos total</div>
+            <ul class="exercise-list">
+              <li><span class="ex-name">Repos complet</span></li>
+              <li><span class="ex-name" style="color:var(--muted);font-size:12px;font-style:italic">Récup avant la grosse séance du Sam</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SAMEDI -->
+    <div class="week-block">
+      <div class="week-header" onclick="this.parentElement.classList.toggle('open')">
+        <div>
+          <div class="week-label">Samedi</div>
+          <div class="week-title">STREET WORKOUT + Abdos intensif</div>
+        </div>
+        <div class="week-toggle">▾</div>
+      </div>
+      <div class="week-content">
+        <div class="days-grid">
+          <div class="day-card cardio">
+            <div class="day-name">SAMEDI</div>
+            <div class="day-type">Street Workout / Extérieur 🌤️</div>
+            <ul class="exercise-list">
+              <li><span class="ex-name">🏃 Footing 15 min (échauffement)</span><span class="ex-sets">Warm-up</span></li>
+              <li><span class="ex-name">Tractions prise large</span><span class="ex-sets">4×max</span></li>
+              <li><span class="ex-name">Dips barres parallèles</span><span class="ex-sets">4×max</span></li>
+              <li><span class="ex-name">Pompes déclinées (pieds surélevés)</span><span class="ex-sets">3×15</span></li>
+              <li><span class="ex-name">Tractions prise serrée (biceps)</span><span class="ex-sets">3×8</span></li>
+              <li><span class="ex-name">L-sit / Knee raise barres</span><span class="ex-sets">3×10</span></li>
+              <li><span class="ex-name">Crunchs + Russian twist</span><span class="ex-sets">3×20+20</span></li>
+              <li><span class="ex-name">Sprint 6×50m (finisher)</span><span class="ex-sets">HIIT</span></li>
+            </ul>
+          </div>
+          <div class="day-card rest">
+            <div class="day-name">DIMANCHE</div>
+            <div class="day-type">Repos total</div>
+            <ul class="exercise-list">
+              <li><span class="ex-name">Repos complet 🛌</span></li>
+              <li><span class="ex-name" style="color:var(--muted);font-size:12px">Balade si envie, pas d'obligation</span></li>
+              <li><span class="ex-name" style="color:var(--muted);font-size:12px">Prépare tes meals pour la semaine</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="note-box">
+          ☀️ <span>Si il pleut le samedi, remplace par une séance salle classique : <strong>Pectoraux + Abdos intensif</strong> (développés, câbles, finisher HIIT vélo).</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ABDOS FOCUS -->
+  <section>
+    <div class="section-title">Protocole Abdos</div>
+    <div class="section-sub">À intégrer en fin de chaque séance salle (10 min) — Évolue par phase</div>
+    <div class="days-grid" style="grid-template-columns: repeat(3,1fr)">
+      <div class="day-card workout">
+        <div class="day-name" style="font-size:16px">PHASE 1</div>
+        <div class="day-type">Bases · S1–S3</div>
+        <ul class="exercise-list">
+          <li><span class="ex-name">Planche</span><span class="ex-sets">3×30s</span></li>
+          <li><span class="ex-name">Crunchs</span><span class="ex-sets">3×20</span></li>
+          <li><span class="ex-name">Leg raises</span><span class="ex-sets">3×12</span></li>
+          <li><span class="ex-name">Gainage latéral</span><span class="ex-sets">2×20s</span></li>
+        </ul>
+      </div>
+      <div class="day-card workout">
+        <div class="day-name" style="font-size:16px">PHASE 2</div>
+        <div class="day-type">Intensité · S4–S6</div>
+        <ul class="exercise-list">
+          <li><span class="ex-name">Planche dynamique</span><span class="ex-sets">3×45s</span></li>
+          <li><span class="ex-name">Crunchs câble</span><span class="ex-sets">4×15</span></li>
+          <li><span class="ex-name">Leg raises suspendus</span><span class="ex-sets">3×15</span></li>
+          <li><span class="ex-name">Russian twist lesté</span><span class="ex-sets">3×20</span></li>
+        </ul>
+      </div>
+      <div class="day-card workout">
+        <div class="day-name" style="font-size:16px">PHASE 3</div>
+        <div class="day-type">Définition · S7–S10</div>
+        <ul class="exercise-list">
+          <li><span class="ex-name">Planche + tap épaule</span><span class="ex-sets">4×45s</span></li>
+          <li><span class="ex-name">Dragon flag (assisté)</span><span class="ex-sets">3×8</span></li>
+          <li><span class="ex-name">V-ups</span><span class="ex-sets">4×12</span></li>
+          <li><span class="ex-name">Ab wheel</span><span class="ex-sets">3×10</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- NUTRITION -->
+  <section>
+    <div class="section-title">Nutrition</div>
+    <div class="section-sub">Léger déficit calorique · haute protéine · simple à tenir</div>
+    <div class="nutrition-grid">
+      <div class="nutri-card">
+        <div class="nutri-title"><span class="nutri-icon">🥩</span> Macros cibles / jour</div>
+        <div class="macro-row">
+          <span class="macro-name">Calories</span>
+          <span class="macro-val" style="color:var(--accent)">~2450 kcal</span>
+          <div class="macro-bar"><div class="macro-fill" style="background:var(--accent);width:85%"></div></div>
+        </div>
+        <div class="macro-row">
+          <span class="macro-name">Protéines</span>
+          <span class="macro-val" style="color:var(--green)">165–180 g</span>
+          <div class="macro-bar"><div class="macro-fill" style="background:var(--green);width:90%"></div></div>
+        </div>
+        <div class="macro-row">
+          <span class="macro-name">Glucides</span>
+          <span class="macro-val" style="color:var(--blue)">~250 g</span>
+          <div class="macro-bar"><div class="macro-fill" style="background:var(--blue);width:65%"></div></div>
+        </div>
+        <div class="macro-row">
+          <span class="macro-name">Lipides</span>
+          <span class="macro-val" style="color:var(--accent2)">~75 g</span>
+          <div class="macro-bar"><div class="macro-fill" style="background:var(--accent2);width:40%"></div></div>
+        </div>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--faint)">
+          <div style="font-size:12px;color:var(--muted);line-height:1.7">
+            🎯 <strong style="color:var(--text)">La protéine est non-négociable.</strong><br>
+            2g/kg minimum (92kg → 165–185g/j) pour préserver le muscle en déficit.
+          </div>
+        </div>
+      </div>
+
+      <div class="nutri-card">
+        <div class="nutri-title"><span class="nutri-icon">🍽️</span> Repas type (journée training)</div>
+        <ul class="tip-list">
+          <li><span class="tip-icon">🌅</span><div><strong>Petit-déj</strong> — Flocons d'avoine 80g + 2 œufs entiers + 3 blancs + banane. Café noir.</div></li>
+          <li><span class="tip-icon">🕛</span><div><strong>Déjeuner</strong> — Blanc de poulet ou thon 180g + riz ou patate douce 200g + légumes verts.</div></li>
+          <li><span class="tip-icon">💪</span><div><strong>Pre-workout</strong> — Riz de riz + beurre de cacahuète, ou fromage blanc + fruits. 1h avant.</div></li>
+          <li><span class="tip-icon">🍗</span><div><strong>Post-workout</strong> — Protéine whey 30g + glucides rapides (riz, fruits) dans les 30 min.</div></li>
+          <li><span class="tip-icon">🌙</span><div><strong>Dîner</strong> — Viande/poisson 180g + légumes sautés + petite portion féculents si cardio le soir.</div></li>
+          <li><span class="tip-icon">🥛</span><div><strong>Soirée</strong> — Fromage blanc 0% 200g + quelques noix. Protéine lente pour la nuit.</div></li>
+        </ul>
+      </div>
+
+      <div class="nutri-card">
+        <div class="nutri-title"><span class="nutri-icon">✅</span> Les règles simples à tenir</div>
+        <ul class="tip-list">
+          <li><span class="tip-icon">💧</span><div>Boire <strong>2.5–3L d'eau/jour</strong>, la déshydratation freine la perte de graisse et la récup musculaire.</div></li>
+          <li><span class="tip-icon">🚫</span><div>Limiter l'alcool — 1 verre = 200 kcal vides. Les week-ends étudiants sont le plus gros frein.</div></li>
+          <li><span class="tip-icon">🌾</span><div>Privilégier les glucides <strong>complexes</strong> (avoine, riz complet, patate douce, légumineuses).</div></li>
+          <li><span class="tip-icon">📱</span><div>Pas besoin de compter les calories chaque jour — <strong>peser les sources de protéines</strong> suffit au début.</div></li>
+          <li><span class="tip-icon">🍕</span><div>Un repas libre / semaine OK. Pas un cheat day entier — un repas. Ça aide la tête sans tout ruiner.</div></li>
+        </ul>
+      </div>
+
+      <div class="nutri-card">
+        <div class="nutri-title"><span class="nutri-icon">💊</span> Compléments utiles (facultatif)</div>
+        <ul class="tip-list">
+          <li><span class="tip-icon">🥤</span><div><strong>Whey protéine</strong> — Le seul vraiment utile si tu manges peu de protéines. 1–2 shakes/jour.</div></li>
+          <li><span class="tip-icon">⚡</span><div><strong>Créatine monohydrate</strong> — 5g/jour, prouvée scientifiquement. Force +5–10%, récup améliorée.</div></li>
+          <li><span class="tip-icon">☀️</span><div><strong>Vitamine D3</strong> — Surtout en début de programme, essentiel pour la synthèse protéique et l'énergie.</div></li>
+          <li><span class="tip-icon">🐟</span><div><strong>Oméga-3</strong> — Anti-inflammatoire, aide la récup articulaire et musculaire.</div></li>
+          <li><span class="tip-icon">🚫</span><div><em style="color:var(--muted)">Brûleurs de graisse, pré-workout thermogéniques → Inutiles. Dépense l'argent en bouffe de qualité.</em></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECOVERY -->
+  <section>
+    <div class="section-title">Sommeil & Récupération</div>
+    <div class="section-sub">Le gras se brûle et le muscle se construit quand tu dors — pas en salle</div>
+    <div class="recovery-grid">
+      <div class="rec-card">
+        <div class="rec-icon">😴</div>
+        <div class="rec-title">Sommeil : 7h30 minimum</div>
+        <div class="rec-text">À 20 ans, la GH (hormone de croissance) est libérée massivement la nuit. Dormir 6h ou moins divise par 2 tes résultats. Couche-toi avant minuit.</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">📵</div>
+        <div class="rec-title">Écrans le soir</div>
+        <div class="rec-text">Pas d'écran 30–45 min avant de dormir si possible. La lumière bleue retarde l'endormissement. Mode nuit systématique après 21h sinon.</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">🧘</div>
+        <div class="rec-title">Stress & Cortisol</div>
+        <div class="rec-text">Le stress d'apprenti/étudiant augmente le cortisol → stockage de graisse abdo. 10 min de marche ou respiration après les grosses journées.</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">🛁</div>
+        <div class="rec-title">Récup active</div>
+        <div class="rec-text">Mardi et vendredi : marche, stretching, foam roller. Pas d'objectif de performance — juste activer la circulation et accélérer la récup musculaire.</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">🌡️</div>
+        <div class="rec-title">Douche froide</div>
+        <div class="rec-text">30s de froid à la fin de ta douche après les séances intenses. Réduit l'inflammation, améliore la récup et booste la clarté mentale. Dur mais efficace.</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-icon">📆</div>
+        <div class="rec-title">Déload si besoin</div>
+        <div class="rec-text">Si tu ressens une fatigue persistante après 4–5 semaines, fais une semaine décharge : même structure, -30% de charge. Le corps en a besoin.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS TRACKER -->
+  <section>
+    <div class="section-title">Tracker de Progression</div>
+    <div class="section-sub">20 avr → 1er juil · 10 semaines · Clique pour marquer comme terminé</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:40px;">
+      <div class="tracker-grid" id="tracker"></div>
+      <div class="progress-bar-wrap" style="margin-top:16px;">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-labels">
+        <span>Semaine 1</span>
+        <span id="progressText">0 / 10 semaines</span>
+        <span>Semaine 10</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Week tracker
+  const weeks = [
+    { label: 'S1', dates: '20–26 avr', phase: 1 },
+    { label: 'S2', dates: '27 avr–3 mai', phase: 1 },
+    { label: 'S3', dates: '4–10 mai', phase: 1 },
+    { label: 'S4', dates: '11–17 mai', phase: 2 },
+    { label: 'S5', dates: '18–24 mai', phase: 2 },
+    { label: 'S6', dates: '25–31 mai', phase: 2 },
+    { label: 'S7', dates: '1–7 juin', phase: 3 },
+    { label: 'S8', dates: '8–14 juin', phase: 3 },
+    { label: 'S9', dates: '15–21 juin', phase: 3 },
+    { label: 'S10', dates: '22 juin–1 juil', phase: 3 },
+  ];
+
+  const tracker = document.getElementById('tracker');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+
+  let done = JSON.parse(localStorage.getItem('shapeup-weeks') || '[]');
+  const CURRENT_WEEK = 0; // S1 is current
+
+  function renderTracker() {
+    tracker.innerHTML = '';
+    weeks.forEach((w, i) => {
+      const el = document.createElement('div');
+      el.className = 'tracker-week';
+      if (done.includes(i)) el.classList.add('done');
+      else if (i === CURRENT_WEEK) el.classList.add('current');
+      el.textContent = w.label;
+      el.title = w.dates + ' · Phase ' + w.phase;
+      el.onclick = () => {
+        if (done.includes(i)) done = done.filter(x => x !== i);
+        else done.push(i);
+        localStorage.setItem('shapeup-weeks', JSON.stringify(done));
+        renderTracker();
+      };
+      tracker.appendChild(el);
+    });
+    const pct = (done.length / 10) * 100;
+    progressFill.style.width = pct + '%';
+    progressText.textContent = done.length + ' / 10 semaines';
+  }
+
+  renderTracker();
+
+  // Animate progress bar on load
+  setTimeout(() => {
+    const pct = (done.length / 10) * 100;
+    progressFill.style.width = pct + '%';
+  }, 100);
+</script>
+
+</body>
+</html>
